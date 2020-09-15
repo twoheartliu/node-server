@@ -4,6 +4,8 @@ import * as fs from 'fs';
 import * as p from 'path';
 import * as url from 'url';
 
+let cacheAge = 3600 * 24 * 365;
+
 const staticDir = p.resolve(__dirname, 'static');
 // 用 http 创建 server
 const server = http.createServer();
@@ -22,11 +24,9 @@ server.on('request', (request: IncomingMessage, response: ServerResponse) => {
   }
   fs.readFile(p.resolve(staticDir, fileName), (error, data) => {
     if (error) {
-      console.log(error);
       if (error.errno === -2) {
         response.statusCode = 404;
         fs.readFile(p.resolve(staticDir, '404.html'), (error, data) => {
-          console.log(data);
           response.end(data);
         });
       } else {
@@ -34,7 +34,7 @@ server.on('request', (request: IncomingMessage, response: ServerResponse) => {
         response.end('服务器繁忙');
       }
     } else {
-      response.setHeader('Cache-Control', 'public, max-age=31536000');
+      response.setHeader('Cache-Control', `public, max-age=${cacheAge}`);
       response.end(data);
     }
   });
